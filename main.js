@@ -695,25 +695,18 @@
       if (!state.hasReachedVenue) {
         state.hasReachedVenue = true;
         DOM.dock.classList.add('active');
-        DOM.balloonHint.classList.add('active');
-        setTimeout(() => DOM.balloonHint.classList.remove('active'), 6000);
 
         if (window.soundEngine) {
           window.soundEngine.playFanfare();
           window.soundEngine.startAmbient();
         }
         triggerConfettiBlast();
-      }
 
-      if (!state.isSpatialMode) {
-        if (prog < 0.78) {
-          slideWindowTo(0);
-        } else if (prog < 0.88) {
-          slideWindowTo(1);
-        } else if (prog < 0.96) {
-          slideWindowTo(2);
-        } else {
-          slideWindowTo(3);
+        if (!state.isSpatialMode) {
+          const targetIdx = (typeof state.currentWindowIndex === 'number' && state.currentWindowIndex >= 0)
+            ? state.currentWindowIndex
+            : 0;
+          slideWindowTo(targetIdx);
         }
       }
     } else {
@@ -748,15 +741,43 @@
           setSpatialFocus(targetIdx);
         } else {
           slideWindowTo(targetIdx);
-          const maxScroll = (DOM.scrollTrack ? DOM.scrollTrack.offsetHeight : 5200) - window.innerHeight;
-          const targetScroll = maxScroll * (0.74 + targetIdx * 0.08);
-          if (lenis) {
-            lenis.scrollTo(targetScroll, { duration: 1.2 });
-          } else {
-            window.scrollTo({ top: targetScroll, behavior: 'smooth' });
-          }
         }
       });
+    });
+
+    // Touch horizontal swipe to navigate between cards on mobile
+    let touchStartX = 0;
+    let touchStartY = 0;
+    DOM.windows.forEach(win => {
+      win.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length > 0) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+
+      win.addEventListener('touchend', (e) => {
+        if (!e.changedTouches || e.changedTouches.length === 0) return;
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+
+        // Horizontal swipe detected (more horizontal than vertical, > 45px distance)
+        if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
+          if (diffX < 0) {
+            // Swiped left -> Next card
+            if (state.currentWindowIndex < DOM.windows.length - 1) {
+              slideWindowTo(state.currentWindowIndex + 1, 'forward');
+            }
+          } else {
+            // Swiped right -> Previous card
+            if (state.currentWindowIndex > 0) {
+              slideWindowTo(state.currentWindowIndex - 1, 'backward');
+            }
+          }
+        }
+      }, { passive: true });
     });
 
     if (DOM.spatialPrevBtn) {
