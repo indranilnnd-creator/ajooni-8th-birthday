@@ -37,7 +37,9 @@
     isSpatialMode: false,
     spatialFocusIndex: 0,
     hasReachedVenue: false,
-    poppedCount: 0
+    poppedCount: 0,
+    lastCardSwitchTime: 0,
+    manualNavLock: false
   };
 
   const DOM = {
@@ -533,14 +535,16 @@
 
     // Initialize Lenis smooth scroll engine
     if (typeof Lenis !== 'undefined') {
+      const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
       lenis = new Lenis({
-        duration: 1.4,
+        duration: isTouch ? 0.7 : 1.2,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         orientation: 'vertical',
         gestureOrientation: 'vertical',
         smoothWheel: true,
         wheelMultiplier: 1.0,
-        touchMultiplier: 1.5,
+        touchMultiplier: isTouch ? 0.8 : 1.0,
+        syncTouch: true, // 1:1 direct tracking without runaway ghost gliding
         infinite: false
       });
 
@@ -709,6 +713,37 @@
           slideWindowTo(targetIdx);
         }
       }
+
+      // Scroll-driven card transitions with generous hysteresis deadbands (cards stay rock-solid unless scrolled)
+      if (!state.isSpatialMode && !state.manualNavLock) {
+        const now = Date.now();
+        if (now - state.lastCardSwitchTime > 320) {
+          const cur = state.currentWindowIndex;
+          let nextCard = cur;
+
+          // Asymmetric hysteresis thresholds:
+          // Card 0 (Invitation): 0.70 to 0.79
+          // Card 1 (Ajooni Turning 8): 0.79 to 0.88
+          // Card 2 (When & Where): 0.88 to 0.96
+          // Card 3 (RSVP & Wishes): 0.96 to 1.00
+          if (cur === 0) {
+            if (prog >= 0.79) nextCard = 1;
+          } else if (cur === 1) {
+            if (prog >= 0.88) nextCard = 2;
+            else if (prog < 0.74) nextCard = 0;
+          } else if (cur === 2) {
+            if (prog >= 0.96) nextCard = 3;
+            else if (prog < 0.83) nextCard = 1;
+          } else if (cur === 3) {
+            if (prog < 0.92) nextCard = 2;
+          }
+
+          if (nextCard !== cur) {
+            state.lastCardSwitchTime = now;
+            slideWindowTo(nextCard);
+          }
+        }
+      }
     } else {
       if (state.hasReachedVenue) {
         state.hasReachedVenue = false;
@@ -719,18 +754,43 @@
   }
 
   // --- 4. 4 Distinct 3D Liquid Glass Window Manager ---
+  function navigateToCard(targetIdx, direction = 'auto') {
+    if (targetIdx < 0 || targetIdx >= DOM.windows.length) return;
+    state.manualNavLock = true;
+    state.lastCardSwitchTime = Date.now();
+    slideWindowTo(targetIdx, direction);
+
+    // Center scroll progress in target card's zone
+    const plateaus = [0.74, 0.82, 0.90, 0.98];
+    const maxScroll = (DOM.scrollTrack ? DOM.scrollTrack.offsetHeight : 5200) - window.innerHeight;
+    const targetScroll = plateaus[targetIdx] * maxScroll;
+
+    state.progress = plateaus[targetIdx];
+    state.targetProgress = state.progress;
+
+    if (lenis) {
+      lenis.scrollTo(targetScroll, { immediate: true });
+    } else {
+      window.scrollTo(0, targetScroll);
+    }
+
+    setTimeout(() => {
+      state.manualNavLock = false;
+    }, 450);
+  }
+
   function setupWindowSystem() {
     document.querySelectorAll('.next-win-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const nextIdx = parseInt(e.currentTarget.dataset.next, 10);
-        slideWindowTo(nextIdx, 'forward');
+        navigateToCard(nextIdx, 'forward');
       });
     });
 
     document.querySelectorAll('.prev-win-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const prevIdx = parseInt(e.currentTarget.dataset.prev, 10);
-        slideWindowTo(prevIdx, 'backward');
+        navigateToCard(prevIdx, 'backward');
       });
     });
 
@@ -740,7 +800,7 @@
         if (state.isSpatialMode) {
           setSpatialFocus(targetIdx);
         } else {
-          slideWindowTo(targetIdx);
+          navigateToCard(targetIdx);
         }
       });
     });
@@ -768,15 +828,23 @@
           if (diffX < 0) {
             // Swiped left -> Next card
             if (state.currentWindowIndex < DOM.windows.length - 1) {
-              slideWindowTo(state.currentWindowIndex + 1, 'forward');
+              navigateToCard(state.currentWindowIndex + 1, 'forward');
             }
           } else {
             // Swiped right -> Previous card
             if (state.currentWindowIndex > 0) {
-              slideWindowTo(state.currentWindowIndex - 1, 'backward');
+              navigateToCard(state.currentWindowIndex - 1, 'backward');
             }
           }
         }
+      }, { passive: true });
+
+      // Prevent inner card content reading from triggering background page drift
+      win.addEventListener('touchmove', (e) => {
+        e.stopPropagation();
+      }, { passive: true });
+      win.addEventListener('wheel', (e) => {
+        e.stopPropagation();
       }, { passive: true });
     });
 
@@ -1190,7 +1258,7 @@
       'BEGIN:VEVENT',
       'UID:ajooni-8th-birthday-2026@celebration.in',
       'DTSTAMP:20260911T120000Z',
-      'DTSTART:20260918T123000Z',
+      'DTSTART:20260918T130000Z',
       'DTEND:20260918T183000Z',
       'SUMMARY:Ajooni\'s 8th Birthday Celebration 🎈🎂',
       'DESCRIPTION:Join us for Ajooni\'s 8th Birthday Celebration at Eastern Metropolitan Club! Magic show, games, feast and joy.',
@@ -1199,7 +1267,7 @@
       'BEGIN:VALARM',
       'TRIGGER:-PT24H',
       'ACTION:DISPLAY',
-      'DESCRIPTION:Reminder: Ajooni\'s 8th Birthday Party tomorrow at 6 PM!',
+      'DESCRIPTION:Reminder: Ajooni\'s 8th Birthday Party tomorrow at 6:30 PM!',
       'END:VALARM',
       'END:VEVENT',
       'END:VCALENDAR'
@@ -1215,7 +1283,7 @@
   }
 
   function startCountdownTimer() {
-    const partyTime = new Date('2026-09-18T18:00:00+05:30').getTime();
+    const partyTime = new Date('2026-09-18T18:30:00+05:30').getTime();
 
     function updateTimer() {
       const now = new Date().getTime();
@@ -1391,7 +1459,7 @@
 
         // WhatsApp Share button
         if (DOM.whatsappShareBtn) {
-          const waText = `*Ajooni's 8th Birthday RSVP Confirmation* 🎈🎂\n\n*Name:* ${name}\n*Status:* ${status === 'Attending' ? '🎉 Attending with Joy' : '💖 Sending Love & Wishes'}\n*Guests:* ${guests}\n*Contact:* ${phone || 'N/A'}\n*Birthday Wish:* "${message || 'Happy 8th Birthday Ajooni!'}"\n\n*Venue:* Eastern Metropolitan Club, Kolkata\n*Date:* Friday, 18 Sept 2026, 6:00 PM`;
+          const waText = `*Ajooni's 8th Birthday RSVP Confirmation* 🎈🎂\n\n*Name:* ${name}\n*Status:* ${status === 'Attending' ? '🎉 Attending with Joy' : '💖 Sending Love & Wishes'}\n*Guests:* ${guests}\n*Contact:* ${phone || 'N/A'}\n*Birthday Wish:* "${message || 'Happy 8th Birthday Ajooni!'}"\n\n*Venue:* Eastern Metropolitan Club, Kolkata\n*Date:* Friday, 18 Sept 2026, 6:30 PM`;
           DOM.whatsappShareBtn.onclick = () => {
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`, '_blank');
           };
