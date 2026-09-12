@@ -1854,3 +1854,421 @@ body::-webkit-scrollbar, html::-webkit-scrollbar {
 .admin-action-btn.clear:hover {
   background: rgba(244, 63, 94, 0.3);
 }
+
+/* ==========================================================================
+   Comprehensive Mobile & Touchscreen Optimization (max-width: 768px)
+   ========================================================================== */
+@media (hover: none) and (pointer: coarse), (max-width: 768px) {
+  #cursor-dot, #cursor-ring, #cursor-spotlight {
+    display: none !important;
+  }
+  * {
+    cursor: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* 1. Compact & Fitted Top Header Bar */
+  .top-status-bar {
+    top: 8px;
+    width: calc(100% - 16px);
+    max-width: 440px;
+    padding: 6px 10px;
+    gap: 6px;
+    justify-content: space-between;
+  }
+
+  .brand-pill {
+    padding: 4px 8px;
+    font-size: 11px;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .brand-name-suffix {
+    display: none;
+  }
+
+  .hud-pill-divider {
+    height: 14px;
+    margin: 0 1px;
+  }
+
+  .status-actions {
+    gap: 4px;
+  }
+
+  .hud-btn {
+    padding: 5px 8px;
+    font-size: 11px;
+    gap: 3px;
+  }
+
+  .hud-btn-text {
+    display: none;
+  }
+
+  #guestbook-btn {
+    padding: 5px 9px;
+    font-weight: 700;
+  }
+
+  /* 2. Hero Section */
+  .space-hero-cta {
+    width: calc(100% - 24px);
+    max-width: 380px;
+    padding: 22px 16px;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 22px;
+  }
+
+  .hero-badge {
+    font-size: 9.5px;
+    padding: 4px 10px;
+    margin-bottom: 8px;
+  }
+
+  .hero-title {
+    font-size: 25px;
+    margin-bottom: 6px;
+  }
+
+  .hero-sub-pill {
+    font-size: 10.5px;
+    padding: 3px 9px;
+    margin-bottom: 10px;
+  }
+
+  .hero-desc {
+    font-size: 12px;
+    line-height: 1.42;
+    margin-bottom: 14px;
+  }
+
+  .scroll-dive-cue {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .cue-mouse-icon {
+    width: 18px;
+    height: 30px;
+  }
+
+  .cue-text h4 {
+    font-size: 12px;
+  }
+
+  .cue-text p {
+    font-size: 10px;
+  }
+
+  .floating-dive-pill,
+  #scroll-prompt,
+  .scroll-flight-indicator,
+  .floating-balloon-hint {
+    display: none !important;
+  }
+
+  /* 3. Liquid Glass Windows (Ergonomic Full Viewport Fitting) */
+  .windows-spatial-stage {
+    inset: 0;
+    padding: 0;
+  }
+
+  .liquid-glass-window {
+    position: fixed;
+    left: 12px !important;
+    right: 12px !important;
+    top: 58px !important;
+    bottom: 68px !important;
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: calc(100vh - 126px) !important;
+    border-radius: 22px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .window-titlebar {
+    padding: 10px 14px;
+    flex-shrink: 0;
+  }
+
+  .window-title-pill {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .window-num-tag {
+    font-size: 10px;
+  }
+
+  .window-body {
+    padding: 12px 14px 18px 14px !important;
+    flex: 1;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .card-title {
+    font-size: 21px;
+    margin-bottom: 5px;
+  }
+
+  .card-description {
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+
+  /* Card 1 */
+  .age-crown-container {
+    margin: 8px 0 12px 0;
+  }
+
+  .big-number-badge {
+    font-size: 40px;
+    width: 64px;
+    height: 64px;
+  }
+
+  /* Card 2 */
+  .event-info-grid {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .info-row {
+    padding: 7px 10px;
+    border-radius: 12px;
+  }
+
+  .info-icon {
+    font-size: 16px;
+  }
+
+  .info-content h5 {
+    font-size: 10px;
+  }
+
+  .info-content p {
+    font-size: 11.5px;
+  }
+
+  /* Card 3 */
+  .venue-photo-frame {
+    height: 125px;
+    margin-bottom: 8px;
+    border-radius: 14px;
+  }
+
+  .countdown-timer-box {
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    border-radius: 14px;
+  }
+
+  .countdown-title {
+    font-size: 8.5px;
+    margin-bottom: 3px;
+  }
+
+  .time-segment {
+    padding: 4px 2px;
+  }
+
+  .digit {
+    font-size: 15px;
+  }
+
+  .label {
+    font-size: 8px;
+  }
+
+  /* Card 4 (RSVP) */
+  .rsvp-glass-form {
+    gap: 8px;
+  }
+
+  .form-group {
+    gap: 3px;
+  }
+
+  .form-label {
+    font-size: 10px;
+  }
+
+  .attendance-radio-group {
+    gap: 6px;
+  }
+
+  .attend-choice-btn {
+    padding: 7px 8px;
+    font-size: 11px;
+    border-radius: 10px;
+  }
+
+  .form-row-grid {
+    gap: 6px;
+  }
+
+  .glass-input, .glass-select, .glass-textarea {
+    padding: 7px 10px;
+    font-size: 13.5px;
+    border-radius: 11px;
+  }
+
+  .glass-textarea {
+    height: 48px;
+  }
+
+  .rsvp-submit-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+    margin-top: 2px;
+  }
+
+  .balloon-pop-tracker {
+    padding: 6px 12px;
+    font-size: 10px;
+    margin-top: 8px;
+  }
+
+  .confetti-cannon-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .rsvp-success-card {
+    padding: 14px;
+    gap: 8px;
+    border-radius: 16px;
+  }
+
+  .success-title {
+    font-size: 18px;
+  }
+
+  .success-desc {
+    font-size: 12px;
+  }
+
+  .whatsapp-share-btn {
+    padding: 9px 14px;
+    font-size: 12px;
+  }
+
+  /* Card Action Buttons */
+  .card-action-btns {
+    margin-top: 10px;
+    gap: 8px;
+  }
+
+  .primary-action-btn, .secondary-action-btn {
+    padding: 9px 14px;
+    font-size: 12px;
+  }
+
+  /* 4. Bottom Dock */
+  .spatial-dock-container {
+    bottom: 10px;
+    padding: 5px 8px;
+    gap: 4px;
+    max-width: calc(100% - 20px);
+  }
+
+  .dock-tab-btn {
+    padding: 6px 9px;
+    font-size: 11px;
+    gap: 3px;
+  }
+
+  .dock-tab-btn span:last-child {
+    display: none;
+  }
+
+  .spatial-toggle-btn {
+    padding: 6px 9px;
+    font-size: 10.5px;
+    gap: 3px;
+  }
+
+  .spatial-toggle-btn span:last-child {
+    display: none;
+  }
+
+  /* 5. Host Admin Modal on Mobile */
+  .admin-modal-backdrop {
+    padding: 10px;
+  }
+
+  .admin-modal-card {
+    max-height: 92vh;
+    border-radius: 20px;
+  }
+
+  .admin-modal-header {
+    padding: 12px 14px;
+  }
+
+  .admin-title-row h3 {
+    font-size: 14px;
+  }
+
+  .admin-subtitle {
+    font-size: 10.5px;
+  }
+
+  .admin-summary-stats {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  .admin-stat-card {
+    padding: 6px 8px;
+    border-radius: 10px;
+  }
+
+  .admin-stat-card .stat-num {
+    font-size: 17px;
+  }
+
+  .admin-stat-card .stat-lbl {
+    font-size: 8.5px;
+  }
+
+  .admin-table-container {
+    padding: 8px 12px;
+    max-height: 44vh;
+    overflow-x: auto;
+  }
+
+  .admin-rsvp-table {
+    font-size: 11px;
+    min-width: 480px;
+  }
+
+  .admin-rsvp-table th, .admin-rsvp-table td {
+    padding: 6px 8px;
+  }
+
+  .admin-modal-actions {
+    padding: 10px 14px;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .admin-action-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 12px;
+    font-size: 11.5px;
+  }
+}
+

@@ -1169,7 +1169,7 @@
       'BEGIN:VEVENT',
       'UID:ajooni-8th-birthday-2026@celebration.in',
       'DTSTAMP:20260911T120000Z',
-      'DTSTART:20260918T133000Z',
+      'DTSTART:20260918T123000Z',
       'DTEND:20260918T183000Z',
       'SUMMARY:Ajooni\'s 8th Birthday Celebration 🎈🎂',
       'DESCRIPTION:Join us for Ajooni\'s 8th Birthday Celebration at Eastern Metropolitan Club! Magic show, games, feast and joy.',
@@ -1178,7 +1178,7 @@
       'BEGIN:VALARM',
       'TRIGGER:-PT24H',
       'ACTION:DISPLAY',
-      'DESCRIPTION:Reminder: Ajooni\'s 8th Birthday Party tomorrow at 7 PM!',
+      'DESCRIPTION:Reminder: Ajooni\'s 8th Birthday Party tomorrow at 6 PM!',
       'END:VALARM',
       'END:VEVENT',
       'END:VCALENDAR'
@@ -1194,7 +1194,7 @@
   }
 
   function startCountdownTimer() {
-    const partyTime = new Date('2026-09-18T19:00:00+05:30').getTime();
+    const partyTime = new Date('2026-09-18T18:00:00+05:30').getTime();
 
     function updateTimer() {
       const now = new Date().getTime();
@@ -1370,7 +1370,7 @@
 
         // WhatsApp Share button
         if (DOM.whatsappShareBtn) {
-          const waText = `*Ajooni's 8th Birthday RSVP Confirmation* 🎈🎂\n\n*Name:* ${name}\n*Status:* ${status === 'Attending' ? '🎉 Attending with Joy' : '💖 Sending Love & Wishes'}\n*Guests:* ${guests}\n*Contact:* ${phone || 'N/A'}\n*Birthday Wish:* "${message || 'Happy 8th Birthday Ajooni!'}"\n\n*Venue:* Eastern Metropolitan Club, Kolkata\n*Date:* Friday, 18 Sept 2026, 7:00 PM`;
+          const waText = `*Ajooni's 8th Birthday RSVP Confirmation* 🎈🎂\n\n*Name:* ${name}\n*Status:* ${status === 'Attending' ? '🎉 Attending with Joy' : '💖 Sending Love & Wishes'}\n*Guests:* ${guests}\n*Contact:* ${phone || 'N/A'}\n*Birthday Wish:* "${message || 'Happy 8th Birthday Ajooni!'}"\n\n*Venue:* Eastern Metropolitan Club, Kolkata\n*Date:* Friday, 18 Sept 2026, 6:00 PM`;
           DOM.whatsappShareBtn.onclick = () => {
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`, '_blank');
           };
