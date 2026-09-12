@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Ajooni's 8th Birthday Celebration | Eastern Metropolitan Club, Kolkata</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    window.onerror = function(msg, url, line) {
+      document.title = 'JS_ERR:' + msg + ':' + line;
+    };
+  </script>
+  <link rel="stylesheet" href="style.css?v=8.1">
+</head>
+<body class="dark-luxury">
+  <!-- Aceternity Style Dynamic Spotlight Beam -->
+  <div id="cursor-spotlight" class="cursor-spotlight"></div>
+
+  <!-- Custom Luxury Fluid Dot & Ring Cursor -->
+  <div id="cursor-dot" class="cursor-dot"></div>
+  <div id="cursor-ring" class="cursor-ring"></div>
+
+  <!-- Scroll Track for Smooth Scroll-Driven GSAP Movement -->
+  <div id="scroll-track"></div>
+
+  <!-- Real Google Earth Satellite Frames Canvas -->
+  <canvas id="earth-canvas"></canvas>
+
+  <!-- Three.js Foreground 3D Canvas (Particle Vortex, Balloons, Confetti & Lighting) -->
+  <div id="canvas-container"></div>
+
+  <!-- Top Floating Status Bar (VisionOS / iOS Dynamic Island) -->
+  <header class="top-status-bar">
+    <div class="brand-pill">
+      <span class="sparkle-icon">✨</span>
+      <span>Ajooni's 8th Birthday</span>
+    </div>
+    <div class="hud-pill-divider"></div>
+    <div class="status-actions">
+      <button id="sound-btn" class="hud-btn" title="Toggle Sound">
+        <span id="sound-icon">🔊</span>
+        <span id="sound-label">Sound</span>
+      </button>
+      <button id="replay-btn" class="hud-btn" title="Return to Top View">
+        <span>🪂</span>
+        <span>Top View</span>
+      </button>
+      <button id="orbit-btn" class="hud-btn" title="360° Free Look Orbit">
+        <span>🔄</span>
+        <span id="orbit-label">Free Look</span>
+      </button>
+      <button id="guestbook-btn" class="hud-btn" title="View Recorded RSVPs">
+        <span>📋</span>
+        <span>RSVPs</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Interactive 360 Free Look Toast Banner -->
+  <div id="free-look-banner" class="free-look-banner">
+    <span class="banner-icon">👁️</span>
+    <span>360° Free Look Active: Click &amp; drag anywhere to look around the sky and venue!</span>
+  </div>
+
+  <!-- Interactive Floating Hint for Balloon Popping -->
+  <div id="balloon-hint" class="floating-balloon-hint">
+    <span>🎈</span>
+    <span>Tap or click floating balloons to pop them!</span>
+  </div>
+
+  <!-- Scroll Down Flight Prompt Indicator -->
+  <div id="scroll-prompt" class="scroll-flight-indicator">
+    <div class="mouse-scroll-icon">
+      <div class="scroll-wheel-dot"></div>
+    </div>
+    <span>Scroll down to dive from above the clouds to Eastern Metropolitan Club</span>
+  </div>
+
+  <!-- Google Earth Style Flight Telemetry HUD -->
+  <aside id="telemetry-hud" class="telemetry-hud">
+    <div class="telemetry-header">
+      <span class="telemetry-target-title">GOOGLE EARTH SATELLITE</span>
+      <div class="target-lock-indicator">
+        <span class="lock-dot"></span>
+        <span id="lock-status-text">GPS LOCKED</span>
+      </div>
+    </div>
+    <div class="telemetry-dest">Eastern Metropolitan Club, Kolkata</div>
+    <div class="telemetry-grid">
+      <div class="telemetry-stat">
+        <span class="stat-label">COORDINATES</span>
+        <span class="stat-val">22.4944°N 88.3927°E</span>
+      </div>
+      <div class="telemetry-stat">
+        <span class="stat-label">LOCATION</span>
+        <span class="stat-val">Santoshpur, Kolkata</span>
+      </div>
+      <div class="telemetry-stat">
+        <span class="stat-label">ALTITUDE</span>
+        <span id="altitude-readout" class="stat-val">35,000 FT (10.6 KM)</span>
+      </div>
+      <div class="telemetry-stat">
+        <span class="stat-label">VELOCITY</span>
+        <span id="velocity-readout" class="stat-val">Freefall 215 km/h</span>
+      </div>
+    </div>
+    <div class="progress-bar-container">
+      <div id="descent-progress-bar" class="progress-bar-fill"></div>
+    </div>
+    <div class="flight-scrubber-container">
+      <span class="scrub-label">0:00</span>
+      <input type="range" id="flight-scrubber" min="0" max="1000" value="0" class="flight-slider" title="Scrub Dive Progress">
+      <span class="scrub-label">Touchdown</span>
+    </div>
+  </aside>
+
+  <!-- Above the Clouds Hero CTA (Flight Intro) -->
+  <main id="space-hero" class="space-hero-cta">
+    <span class="hero-tag">✨ You're Cordially Invited</span>
+    <h1 class="hero-title">Ajooni is Turning 8!</h1>
+    <div class="satellite-indicator">
+      <span>🪂</span>
+      <span>High Altitude Sky Dive into Kolkata</span>
+    </div>
+    <p class="hero-subtitle">
+      Scroll down to experience an authentic sky dive from high above the clouds, freefalling through the cloud deck into South Kolkata and arriving right inside the celebration at Eastern Metropolitan Club!
+    </p>
+    <div class="scroll-dive-cue">
+      <div class="scroll-mouse-icon">
+        <div class="scroll-wheel-dot"></div>
+      </div>
+      <div class="scroll-dive-text">
+        <span class="dive-main-txt">Scroll down to dive</span>
+        <span class="dive-sub-txt">Freefall 35,000 ft through clouds to Eastern Metropolitan Club</span>
+      </div>
+      <span class="dive-arrow">↓</span>
+    </div>
+  </main>
+
+  <!-- 4 DISTINCT 3D SPATIAL LIQUID GLASS WINDOWS -->
+  <section id="windows-stage" class="windows-spatial-stage">
+
+    <!-- Interactive Spatial Deck Controls (visible in 3D Spatial Mode) -->
+    <div id="spatial-deck-nav" class="spatial-deck-nav">
+      <button id="spatial-prev-btn" class="spatial-nav-btn" title="Previous Card (←)">◀ Prev Card</button>
+      <div class="spatial-card-indicator">
+        <span id="spatial-card-name">💌 Card 1: Invitation</span>
+        <span id="spatial-card-index">1 of 4</span>
+      </div>
+      <button id="spatial-next-btn" class="spatial-nav-btn" title="Next Card (→)">Next Card ▶</button>
+      <button id="spatial-close-btn" class="spatial-nav-btn exit-btn" title="Exit 3D Spatial Mode">✕ Standard View</button>
+    </div>
+
+    <!-- WINDOW 1: The Invitation -->
+    <article id="window-1" class="liquid-glass-window" data-window="0">
+      <div class="card-sheen"></div>
+      <div class="window-titlebar">
+        <div class="window-traffic-lights">
+          <div class="traffic-dot close" title="Close Window"></div>
+          <div class="traffic-dot minimize" title="Minimize"></div>
+          <div class="traffic-dot expand" title="Expand to 3D Spatial Mode"></div>
+        </div>
+        <div class="window-title-pill">
+          <span>💌</span>
+          <span>Invitation</span>
+        </div>
+        <span class="window-num-tag">01 / 04</span>
+      </div>
+      <div class="window-body">
+        <h2 class="card-title">A Magical Celebration!</h2>
+        <p class="card-description">
+          With immense love and excitement, we invite you and your family to celebrate the 8th Birthday of our beloved daughter, <strong>Ajooni</strong>!
+        </p>
+        <div class="age-crown-container">
+          <div class="big-number-badge">8</div>
+          <div class="age-text-block">
+            <h4>Eight Years of Wonder</h4>
+            <p>Boundless sunshine, giggles & sweet memories</p>
+          </div>
+        </div>
+        <div class="card-action-btns">
+          <button class="primary-action-btn next-win-btn" data-next="1">
+            <span>The Birthday Star</span>
+            <span>➔</span>
+          </button>
+        </div>
+      </div>
+    </article>
+
+    <!-- WINDOW 2: The Celebrant -->
+    <article id="window-2" class="liquid-glass-window" data-window="1">
+      <div class="card-sheen"></div>
+      <div class="window-titlebar">
+        <div class="window-traffic-lights">
+          <div class="traffic-dot close" title="Close Window"></div>
+          <div class="traffic-dot minimize" title="Minimize"></div>
+          <div class="traffic-dot expand" title="Expand to 3D Spatial Mode"></div>
+        </div>
+        <div class="window-title-pill">
+          <span>👑</span>
+          <span>The Birthday Star</span>
+        </div>
+        <span class="window-num-tag">02 / 04</span>
+      </div>
+      <div class="window-body">
+        <h2 class="card-title">Ajooni is Turning 8!</h2>
+        <p class="card-description">
+          Eight years of boundless smiles that illuminate our lives. Let's gather together to make this celebration full of magic she will treasure forever!
+        </p>
+        <div class="event-info-grid">
+          <div class="info-row">
+            <span class="info-icon">🎪</span>
+            <div class="info-content">
+              <h5>Magic Show & Games</h5>
+              <p>Balloon sculpting, interactive party games & surprises</p>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="info-icon">🎂</span>
+            <div class="info-content">
+              <h5>Grand Cake Cutting</h5>
+              <p>Celebratory lights, sparkles & birthday wishes</p>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="info-icon">🍽️</span>
+            <div class="info-content">
+              <h5>Delightful Feast</h5>
+              <p>Gourmet club dinner buffet & treats</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-action-btns">
+          <button class="secondary-action-btn prev-win-btn" data-prev="0">
+            <span>← Back</span>
+          </button>
+          <button class="primary-action-btn next-win-btn" data-next="2">
+            <span>Venue & Time</span>
+            <span>➔</span>
+          </button>
+        </div>
+      </div>
+    </article>
+
+    <!-- WINDOW 3: When & Where (With Real Photo of Club Gate) -->
+    <article id="window-3" class="liquid-glass-window" data-window="2">
+      <div class="card-sheen"></div>
+      <div class="window-titlebar">
+        <div class="window-traffic-lights">
+          <div class="traffic-dot close" title="Close Window"></div>
+          <div class="traffic-dot minimize" title="Minimize"></div>
+          <div class="traffic-dot expand" title="Expand to 3D Spatial Mode"></div>
+        </div>
+        <div class="window-title-pill">
+          <span>📍</span>
+          <span>Venue & Timings</span>
+        </div>
+        <span class="window-num-tag">03 / 04</span>
+      </div>
+      <div class="window-body">
+        <h2 class="card-title">When & Where</h2>
+
+        <!-- Real Photo Frame of Eastern Metropolitan Club Entrance Gate -->
+        <div class="venue-photo-frame">
+          <img src="assets/club_real_gate.jpg" alt="Eastern Metropolitan Club Entrance Gate">
+          <div class="venue-photo-badge">
+            <span>🏛️</span>
+            <span>Actual Photo: Club Entrance Gate</span>
+          </div>
+        </div>
+
+        <!-- Live Countdown Clock -->
+        <div class="countdown-timer-box">
+          <div class="countdown-title">⏳ COUNTDOWN TO CELEBRATION</div>
+          <div class="countdown-digits">
+            <div class="time-segment">
+              <span id="countdown-days" class="digit">00</span>
+              <span class="label">Days</span>
+            </div>
+            <div class="time-segment">
+              <span id="countdown-hours" class="digit">00</span>
+              <span class="label">Hours</span>
+            </div>
+            <div class="time-segment">
+              <span id="countdown-mins" class="digit">00</span>
+              <span class="label">Mins</span>
+            </div>
+            <div class="time-segment">
+              <span id="countdown-secs" class="digit">00</span>
+              <span class="label">Secs</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="event-info-grid">
+          <div class="info-row">
+            <span class="info-icon">📅</span>
+            <div class="info-content">
+              <h5>Date & Time</h5>
+              <p>Friday, 18 September 2026 | 7:00 PM Onwards</p>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="info-icon">🏛️</span>
+            <div class="info-content">
+              <h5>Venue Address</h5>
+              <p>Eastern Metropolitan Club</p>
+              <p class="venue-address">A-73, Purba Diganta, Santoshpur, Kolkata, West Bengal 700075</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-action-btns">
+          <a id="gmaps-btn" href="https://maps.google.com/?q=Eastern+Metropolitan+Club+Santoshpur+Kolkata" target="_blank" rel="noopener noreferrer" class="secondary-action-btn">
+            <span>📍 Maps</span>
+          </a>
+          <button id="calendar-btn" class="secondary-action-btn">
+            <span>📅 Add Cal</span>
+          </button>
+          <button class="primary-action-btn next-win-btn" data-next="3">
+            <span>RSVP</span>
+            <span>➔</span>
+          </button>
+        </div>
+      </div>
+    </article>
+
+    <!-- WINDOW 4: RSVP & Celebration -->
+    <article id="window-4" class="liquid-glass-window" data-window="3">
+      <div class="card-sheen"></div>
+      <div class="window-titlebar">
+        <div class="window-traffic-lights">
+          <div class="traffic-dot close" title="Close Window"></div>
+          <div class="traffic-dot minimize" title="Minimize"></div>
+          <div class="traffic-dot expand" title="Expand to 3D Spatial Mode"></div>
+        </div>
+        <div class="window-title-pill">
+          <span>🎉</span>
+          <span>RSVP & Wishes</span>
+        </div>
+        <span class="window-num-tag">04 / 04</span>
+      </div>
+      <div class="window-body">
+        <h2 class="card-title">Celebrate With Us!</h2>
+        <p class="card-description">
+          Your presence and blessings will make Ajooni's 8th birthday complete. Let us know if you can attend!
+        </p>
+
+        <!-- Interactive Glass RSVP Form -->
+        <form id="rsvp-form" class="rsvp-glass-form" onsubmit="return false;">
+          <div class="form-group">
+            <label class="form-label" for="rsvp-name">Guest / Family Name *</label>
+            <input type="text" id="rsvp-name" class="glass-input" placeholder="e.g. Rahul & Sunita Sharma" required autocomplete="name">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Will you be attending? *</label>
+            <div class="attendance-radio-group">
+              <button type="button" class="attend-choice-btn active" data-status="Attending">
+                <span>🎉 Attending</span>
+              </button>
+              <button type="button" class="attend-choice-btn" data-status="Sending Wishes">
+                <span>💖 Sending Wishes</span>
+              </button>
+            </div>
+            <input type="hidden" id="rsvp-status" value="Attending">
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group" id="guests-count-group">
+              <label class="form-label" for="rsvp-guests">Number of Guests</label>
+              <select id="rsvp-guests" class="glass-select">
+                <option value="1">1 Person</option>
+                <option value="2" selected>2 Persons</option>
+                <option value="3">3 Persons</option>
+                <option value="4">4 Persons</option>
+                <option value="5+">5+ Persons</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="rsvp-phone">Phone / WhatsApp</label>
+              <input type="tel" id="rsvp-phone" class="glass-input" placeholder="e.g. 9830012345" autocomplete="tel">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="rsvp-message">Birthday Wish for Ajooni</label>
+            <textarea id="rsvp-message" class="glass-textarea" rows="2" placeholder="Leave a sweet blessing or birthday wish..."></textarea>
+          </div>
+
+          <button type="submit" id="rsvp-submit-btn" class="rsvp-submit-btn">
+            <span class="btn-text">Confirm RSVP & Send Wishes ✨</span>
+            <span class="btn-spinner" style="display: none;">⏳ Saving RSVP...</span>
+          </button>
+        </form>
+
+        <!-- RSVP Success Confirmation Card -->
+        <div id="rsvp-success-card" class="rsvp-success-card" style="display: none;">
+          <div class="success-icon">🎉</div>
+          <h3 class="success-title">RSVP Confirmed!</h3>
+          <p id="success-guest-msg" class="success-desc">Thank you so much! We look forward to celebrating Ajooni's 8th birthday with you.</p>
+          <div class="success-actions">
+            <button id="whatsapp-share-btn" class="whatsapp-share-btn">
+              <span>📲</span>
+              <span>Send Confirmation on WhatsApp</span>
+            </button>
+            <button id="rsvp-edit-btn" class="rsvp-edit-btn">
+              <span>✏️ Edit Response</span>
+            </button>
+          </div>
+        </div>
+
+        <button id="confetti-blast-btn" class="confetti-cannon-btn" style="margin-top: 14px;">
+          <span>🎊</span>
+          <span>Blast Confetti Cannon!</span>
+        </button>
+
+        <div class="balloon-pop-tracker">
+          <span>🎈 Interactive Balloons Popped:</span>
+          <span id="pop-counter-badge" class="balloon-pop-counter">0</span>
+        </div>
+
+        <div class="card-action-btns" style="margin-top: 14px;">
+          <button class="secondary-action-btn prev-win-btn" data-prev="2">
+            <span>← Venue</span>
+          </button>
+          <button id="orbit-switch-btn" class="secondary-action-btn" style="flex: 1;">
+            <span>🔄 360° Free Look</span>
+          </button>
+        </div>
+      </div>
+    </article>
+
+  </section>
+
+  <!-- SPATIAL WINDOW DOCK (Bottom Switcher) -->
+  <nav id="spatial-dock" class="spatial-dock-container">
+    <button class="dock-tab-btn active" data-target="0">
+      <span>💌</span>
+      <span>Invite</span>
+    </button>
+    <button class="dock-tab-btn" data-target="1">
+      <span>👑</span>
+      <span>Ajooni (8)</span>
+    </button>
+    <button class="dock-tab-btn" data-target="2">
+      <span>📍</span>
+      <span>Venue</span>
+    </button>
+    <button class="dock-tab-btn" data-target="3">
+      <span>🎉</span>
+      <span>RSVP</span>
+    </button>
+    <div class="dock-divider"></div>
+    <button id="spatial-mode-toggle" class="spatial-toggle-btn" title="View all windows in 3D space">
+      <span>🪟</span>
+      <span>3D Spatial View</span>
+    </button>
+  </nav>
+
+  <!-- Host RSVP Admin Dashboard Modal -->
+  <div id="admin-modal" class="admin-modal-backdrop" style="display: none;">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <div class="admin-title-row">
+          <span class="admin-icon">📋</span>
+          <div>
+            <h3>Ajooni's 8th Birthday — Guest RSVP Book</h3>
+            <p class="admin-subtitle">Live recorded guest responses & headcounts</p>
+          </div>
+        </div>
+        <button id="admin-close-btn" class="admin-close-btn" title="Close">✕</button>
+      </div>
+
+      <div class="admin-summary-stats">
+        <div class="admin-stat-card">
+          <span class="stat-num" id="admin-total-count">0</span>
+          <span class="stat-lbl">Total Responses</span>
+        </div>
+        <div class="admin-stat-card highlight">
+          <span class="stat-num" id="admin-attending-count">0</span>
+          <span class="stat-lbl">Attending Families</span>
+        </div>
+        <div class="admin-stat-card">
+          <span class="stat-num" id="admin-guests-headcount">0</span>
+          <span class="stat-lbl">Total Guests</span>
+        </div>
+      </div>
+
+      <div class="admin-table-container">
+        <table class="admin-rsvp-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Guest Name</th>
+              <th>Status</th>
+              <th>Guests</th>
+              <th>Phone</th>
+              <th>Birthday Wish</th>
+            </tr>
+          </thead>
+          <tbody id="admin-rsvp-tbody">
+            <tr><td colspan="6" style="text-align:center; color:#94a3b8; padding: 24px;">No RSVPs recorded yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="admin-modal-actions">
+        <button id="admin-export-csv-btn" class="admin-action-btn export">
+          <span>📥</span>
+          <span>Download CSV (Excel / Sheets)</span>
+        </button>
+        <button id="admin-clear-btn" class="admin-action-btn clear">
+          <span>🗑️</span>
+          <span>Clear All Records</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Local libraries -->
+  <script src="libs/lenis.min.js"></script>
+  <script src="libs/three.min.js"></script>
+  <script src="libs/OrbitControls.js"></script>
+  <script src="libs/gsap.min.js"></script>
+  <script src="libs/confetti.min.js"></script>
+
+  <!-- Custom Scripts -->
+  <script src="audio.js"></script>
+  <script src="textures.js?v=8.1"></script>
+  <script src="main.js?v=8.1"></script>
+</body>
+</html>

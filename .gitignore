@@ -1,0 +1,7 @@
+﻿*.png
+*.jpg_temp
+edge_profile/
+assets/tile_cache/
+*.py
+capture_cdp.js
+.cache/
