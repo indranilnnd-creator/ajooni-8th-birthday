@@ -171,6 +171,8 @@ body::-webkit-scrollbar, html::-webkit-scrollbar {
   z-index: 1;
   pointer-events: none;
   object-fit: cover;
+  filter: contrast(1.06) saturate(1.07) brightness(0.96);
+  transition: filter 0.6s ease;
 }
 
 /* Three.js Foreground 3D Canvas (Balloons, Sprinkles, Lighting) */
@@ -182,7 +184,103 @@ body::-webkit-scrollbar, html::-webkit-scrollbar {
   height: 100vh;
   z-index: 2;
   pointer-events: none;
+  transition: filter 0.6s ease;
 }
+
+/* ==========================================================================
+   Cinematic Post Layer — colour grade, anamorphic leak, vignette, film grain
+   ========================================================================== */
+.cinematic-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Teal-shadow / warm-highlight split tone + gentle contrast lift */
+.cine-grade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(160deg, rgba(10, 24, 46, 0.28) 0%, rgba(0, 0, 0, 0) 42%),
+    linear-gradient(345deg, rgba(255, 176, 84, 0.10) 0%, rgba(0, 0, 0, 0) 40%);
+  mix-blend-mode: soft-light;
+  opacity: 0.9;
+}
+
+/* Soft anamorphic light leak top-right (reads like a lens flare) */
+.cine-leak {
+  position: absolute;
+  top: -28%;
+  right: -18%;
+  width: 70vw;
+  height: 85vh;
+  background: radial-gradient(
+    ellipse at 62% 34%,
+    rgba(255, 226, 170, 0.30) 0%,
+    rgba(255, 170, 92, 0.12) 34%,
+    rgba(255, 140, 80, 0.03) 58%,
+    transparent 74%
+  );
+  mix-blend-mode: screen;
+  filter: blur(6px);
+  opacity: 0.85;
+}
+
+/* Deep cinematic vignette + soft letterbox scrim so UI sits in a pool of light */
+.cine-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(3, 7, 16, 0.5) 0%, rgba(3, 7, 16, 0) 13%, rgba(3, 7, 16, 0) 87%, rgba(3, 7, 16, 0.58) 100%),
+    radial-gradient(
+      ellipse 78% 72% at 50% 48%,
+      transparent 42%,
+      rgba(3, 7, 16, 0.34) 74%,
+      rgba(2, 5, 12, 0.78) 100%
+    );
+}
+
+/* Animated 35mm-style film grain */
+.cine-grain {
+  position: absolute;
+  inset: -60%;
+  opacity: 0.055;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grainShift 0.7s steps(5) infinite;
+  will-change: transform;
+}
+
+@keyframes grainShift {
+  0%   { transform: translate3d(0, 0, 0); }
+  20%  { transform: translate3d(-3%, 2%, 0); }
+  40%  { transform: translate3d(2%, -3%, 0); }
+  60%  { transform: translate3d(-2%, -2%, 0); }
+  80%  { transform: translate3d(3%, 1%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cine-grain { animation: none; }
+}
+
+@media (hover: none) and (pointer: coarse), (max-width: 768px) {
+  .cine-grain { animation: none; opacity: 0.04; }
+  .cine-leak { opacity: 0.6; }
+}
+
+/* Fade out the post layer while the hero intro is on (keeps intro bright) */
+body.intro-active .cinematic-overlay { opacity: 0.35; }
+
+/* Spatial mode: push the busy background softly out of focus */
+body.spatial-active #earth-canvas {
+  filter: blur(11px) brightness(0.42) saturate(0.72);
+}
+body.spatial-active #canvas-container {
+  filter: blur(4px) brightness(0.6);
+}
+body.spatial-active .cine-leak { opacity: 0.45; }
 
 /* ==========================================================================
    Top Navigation Status Bar (VisionOS Dynamic Island)
@@ -809,12 +907,12 @@ body::-webkit-scrollbar, html::-webkit-scrollbar {
   width: 440px;
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 130px);
-  background: rgba(6, 10, 20, 0.68);
+  background: linear-gradient(165deg, rgba(18, 30, 56, 0.86) 0%, rgba(8, 13, 28, 0.88) 46%, rgba(5, 9, 20, 0.91) 100%);
   backdrop-filter: var(--ios-blur);
   -webkit-backdrop-filter: var(--ios-blur);
-  border: 1px solid rgba(0, 217, 255, 0.22);
+  border: 1px solid rgba(0, 217, 255, 0.30);
   border-radius: 28px;
-  box-shadow: 0 35px 80px -15px rgba(0, 0, 0, 0.8), 0 0 35px -5px rgba(0, 217, 255, 0.15), inset 0 1px 1.5px rgba(255, 255, 255, 0.35);
+  box-shadow: 0 40px 90px -18px rgba(0, 0, 0, 0.92), 0 0 48px -8px rgba(0, 217, 255, 0.22), inset 0 1px 1.5px rgba(255, 255, 255, 0.42), inset 0 -60px 90px -50px rgba(0, 217, 255, 0.10);
   color: #ffffff;
   overflow: hidden;
   display: flex;
@@ -968,6 +1066,7 @@ body::-webkit-scrollbar, html::-webkit-scrollbar {
   -ms-overflow-style: none;
   display: flex;
   flex-direction: column;
+  background: linear-gradient(180deg, rgba(3, 7, 16, 0.42) 0%, rgba(3, 7, 16, 0) 150px);
 }
 
 .window-body::-webkit-scrollbar {
@@ -995,14 +1094,15 @@ body::-webkit-scrollbar, html::-webkit-scrollbar {
   background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 45%, #00d9ff 80%, #a855f7 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 10px rgba(0, 217, 255, 0.2));
+  filter: drop-shadow(0 2px 10px rgba(0, 217, 255, 0.22)) drop-shadow(0 3px 16px rgba(0, 0, 0, 0.55));
 }
 
 .card-description {
   font-size: 13.5px;
   line-height: 1.6;
-  color: #e2e8f0;
+  color: #e6edf7;
   margin-bottom: 16px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.65);
 }
 
 /* Real Club Entrance Photo Frame inside Window 3 */

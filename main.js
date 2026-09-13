@@ -178,7 +178,7 @@
     for (let i = 0; i < TOTAL_FRAMES; i++) {
       const img = new Image();
       const numStr = String(i).padStart(3, '0');
-      img.src = `assets/dense_frames/frame_${numStr}.jpg?v=8.0_skydive`;
+      img.src = `assets/dense_frames/frame_${numStr}.jpg?v=9.0_venue`;
       img.onload = () => {
         loadedFramesCount++;
         renderGoogleEarthFrame(state.progress, true);
@@ -272,14 +272,27 @@
     controls.minDistance = 3;
     controls.maxDistance = 50;
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
-    const pinkSpot = new THREE.PointLight(0xf43f5e, 3.5, 60);
+    const hemiLight = new THREE.HemisphereLight(0x8ecbff, 0x2a1a4a, 0.55);
+    scene.add(hemiLight);
+
+    // Key light gives the balloons a crisp, glossy specular highlight
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.15);
+    keyLight.position.set(-8, 16, 14);
+    scene.add(keyLight);
+
+    // Cool rim from behind for separation
+    const rimLight = new THREE.DirectionalLight(0x66e0ff, 0.5);
+    rimLight.position.set(10, -6, -12);
+    scene.add(rimLight);
+
+    const pinkSpot = new THREE.PointLight(0xf43f5e, 2.4, 70);
     pinkSpot.position.set(-15, 12, 10);
     scene.add(pinkSpot);
 
-    const goldSpot = new THREE.PointLight(0xf59e0b, 3.5, 60);
+    const goldSpot = new THREE.PointLight(0xf59e0b, 2.4, 70);
     goldSpot.position.set(15, 12, 10);
     scene.add(goldSpot);
 
@@ -301,11 +314,12 @@
 
       const balloonMat = new THREE.MeshPhysicalMaterial({
         color: color,
-        metalness: 0.28,
-        roughness: 0.12,
+        metalness: 0.0,
+        roughness: 0.22,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.1,
-        reflectivity: 0.95
+        clearcoatRoughness: 0.08,
+        reflectivity: 1.0,
+        emissive: new THREE.Color(color).multiplyScalar(0.07)
       });
 
       const balloonMesh = new THREE.Mesh(balloonGeo, balloonMat);
@@ -352,7 +366,7 @@
 
   // --- Festive Shimmering Confetti & Ribbon Rain ---
   function buildConfettiRain() {
-    const count = 180;
+    const count = 110;
     const colors = [0xf43f5e, 0xf59e0b, 0x10b981, 0x06b6d4, 0x8b5cf6, 0xec4899, 0xfacc15];
 
     for (let i = 0; i < count; i++) {
@@ -360,26 +374,27 @@
       let geo;
       const type = Math.random();
 
-      if (type < 0.65) {
+      if (type < 0.68) {
         // Delicate metallic confetti ribbon
-        geo = new THREE.PlaneGeometry(0.14, 0.30);
+        geo = new THREE.PlaneGeometry(0.10, 0.22);
       } else {
         // Shimmering party sparkle crystal
-        geo = new THREE.TetrahedronGeometry(0.12);
+        geo = new THREE.TetrahedronGeometry(0.095);
       }
 
       const mat = new THREE.MeshStandardMaterial({
         color: color,
-        roughness: 0.2,
-        metalness: 0.8,
+        roughness: 0.32,
+        metalness: 0.55,
+        emissive: new THREE.Color(color).multiplyScalar(0.18),
         side: THREE.DoubleSide
       });
       const mesh = new THREE.Mesh(geo, mat);
 
       // Distribute in background celebratory volume (safely behind cards)
-      const spreadX = (Math.random() - 0.5) * 36;
+      const spreadX = (Math.random() - 0.5) * 34;
       const spreadY = (Math.random() - 0.5) * 28;
-      const spreadZ = -6 + Math.random() * 11;
+      const spreadZ = -9 + Math.random() * 8;
       mesh.position.set(spreadX, spreadY, spreadZ);
       mesh.scale.set(0, 0, 0); // Initially hidden at high altitude
 
@@ -440,41 +455,33 @@
     scene.add(fairySparkles);
   }
 
-  // --- Three.js Points Particle Vortex (5000 Glowing Celestial Particles) ---
+  // --- Three.js Points Particle Field (sunlit atmospheric dust / bokeh) ---
   function buildParticleVortex() {
-    const PARTICLE_COUNT = 5000;
+    const PARTICLE_COUNT = 1700;
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(PARTICLE_COUNT * 3);
     const colors = new Float32Array(PARTICLE_COUNT * 3);
 
-    const cyan = new THREE.Color('#00d9ff');
-    const teal = new THREE.Color('#00ffcc');
-    const purple = new THREE.Color('#a855f7');
-    const gold = new THREE.Color('#fbbf24');
+    const white = new THREE.Color('#ffffff');
+    const cyan = new THREE.Color('#7fe9ff');
+    const teal = new THREE.Color('#9dffe0');
+    const purple = new THREE.Color('#c4a6ff');
+    const gold = new THREE.Color('#ffe0a3');
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
-      // Spiral formula: r = 2.0 + height * 0.15 with random radial spread
-      const height = (Math.random() - 0.5) * 70; // -35 to +35
-      const angle = (i * 0.08) + (Math.random() * 0.6);
-      const r = 2.0 + Math.abs(height) * 0.14 + (Math.random() * 4.0 - 2.0);
+      // Wide, sparsely-scattered volume so it reads as floating dust motes
+      positions[i * 3] = (Math.random() - 0.5) * 110;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 64;
+      positions[i * 3 + 2] = -42 + Math.random() * 50;
 
-      const x = Math.cos(angle) * r;
-      const y = height;
-      const z = Math.sin(angle) * r;
-
-      positions[i * 3] = x;
-      positions[i * 3 + 1] = y;
-      positions[i * 3 + 2] = z;
-
-      // Dual gradient: cyan to teal, with purple & gold accents
       const rnd = Math.random();
       let col;
-      if (rnd < 0.55) {
+      if (rnd < 0.5) {
+        col = white.clone().lerp(gold, Math.random());
+      } else if (rnd < 0.78) {
         col = cyan.clone().lerp(teal, Math.random());
-      } else if (rnd < 0.85) {
-        col = cyan.clone().lerp(purple, Math.random());
       } else {
-        col = gold.clone();
+        col = purple.clone();
       }
 
       colors[i * 3] = col.r;
@@ -492,8 +499,8 @@
     const ctx = canvas.getContext('2d');
     const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
     grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-    grad.addColorStop(0.35, 'rgba(0, 217, 255, 0.85)');
-    grad.addColorStop(0.7, 'rgba(0, 255, 204, 0.25)');
+    grad.addColorStop(0.35, 'rgba(255, 240, 200, 0.7)');
+    grad.addColorStop(0.7, 'rgba(120, 220, 255, 0.2)');
     grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 32, 32);
@@ -501,13 +508,14 @@
     const texture = new THREE.CanvasTexture(canvas);
 
     const mat = new THREE.PointsMaterial({
-      size: 0.95,
+      size: 0.7,
       vertexColors: true,
       map: texture,
       transparent: true,
-      opacity: 0.95,
+      opacity: 0.55,
       blending: THREE.AdditiveBlending,
-      depthWrite: false
+      depthWrite: false,
+      sizeAttenuation: true
     });
 
     particleVortex = new THREE.Points(geo, mat);
@@ -520,10 +528,10 @@
     if (prog < 0.32) {
       particleVortex.visible = true;
       const fade = 1.0 - (prog / 0.32);
-      particleVortex.material.opacity = 0.95 * fade;
-      const s = 1.0 + prog * 2.5;
+      particleVortex.material.opacity = 0.55 * fade;
+      const s = 1.0 + prog * 0.9;
       particleVortex.scale.set(s, s, s);
-      particleVortex.rotation.y += 0.003 + Math.abs(velocity) * 0.003;
+      particleVortex.rotation.y += 0.0006 + Math.abs(velocity) * 0.0008;
     } else {
       particleVortex.visible = false;
     }
@@ -685,6 +693,8 @@
 
   // Choreograph 3D Liquid Glass Windows & Prompts according to flight progress
   function updateFlightUIChoreography(prog) {
+    document.body.classList.toggle('intro-active', prog <= 0.04);
+
     if (prog > 0.04) {
       DOM.scrollPrompt.classList.add('fade-out');
       DOM.spaceHero.classList.add('fade-out');
@@ -1060,6 +1070,7 @@
     state.isSpatialMode = (forceState !== undefined) ? forceState : !state.isSpatialMode;
     DOM.windowsStage.classList.toggle('spatial-mode', state.isSpatialMode);
     DOM.spatialToggleBtn.classList.toggle('mode-active', state.isSpatialMode);
+    document.body.classList.toggle('spatial-active', state.isSpatialMode);
 
     if (DOM.balloonHint) {
       DOM.balloonHint.style.display = state.isSpatialMode ? 'none' : '';
@@ -1682,6 +1693,13 @@
       if (!state.isSpatialMode) {
         DOM.windowsStage.style.transform = `translate3d(${rotY * -50}px, ${rotX * 30}px, 0)`;
       }
+    } else {
+      // Gentle handheld "breathing" for a cinematic, alive camera
+      const driftX = Math.sin(elapsedTime * 0.26) * 0.5;
+      const driftY = Math.cos(elapsedTime * 0.21) * 0.32;
+      camera.position.x += (driftX - camera.position.x) * 0.015;
+      camera.position.y += (driftY - camera.position.y) * 0.015;
+      camera.rotation.z = Math.sin(elapsedTime * 0.17) * 0.0045;
     }
 
     renderer.render(scene, camera);
