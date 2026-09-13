@@ -28,6 +28,16 @@
   let popParticles = [];
   let raycaster, mouse;
 
+  // --- Premium Interactive 3D Hero Object (Holographic Glass Birthday Cake) ---
+  let heroGroup, heroSpin, heroHalo, heroHalo2, heroOrbitStars, heroPointLight, heroFillLight;
+  let heroBackdrop;
+  let heroFlames = [];
+  let heroHover = false;
+  let heroPulse = 0;
+  let heroAutoAngle = 0;
+  let pointerTX = 0, pointerTY = 0;   // target normalized pointer (-1..1)
+  let pointerNX = 0, pointerNY = 0;   // smoothed normalized pointer
+
   // --- State & Animation Tracking ---
   const state = {
     progress: 0,        // 0.0 (Above Clouds) to 1.0 (Inside Club Entrance)
@@ -125,6 +135,7 @@
     preloadDenseEarthFrames();
     initThreeScene();
     buildParticleVortex();
+    buildHeroObject();
     buildBalloons();
     buildConfettiRain();
     buildFairySparkles();
@@ -178,7 +189,7 @@
     for (let i = 0; i < TOTAL_FRAMES; i++) {
       const img = new Image();
       const numStr = String(i).padStart(3, '0');
-      img.src = `assets/dense_frames/frame_${numStr}.jpg?v=9.0_venue`;
+      img.src = `assets/dense_frames/frame_${numStr}.jpg?v=11.0_venue`;
       img.onload = () => {
         loadedFramesCount++;
         renderGoogleEarthFrame(state.progress, true);
@@ -523,18 +534,241 @@
     scene.add(particleVortex);
   }
 
+  // --- Soft additive glow sprite texture (candle bloom, halo sparkle) ---
+  function makeGlowTexture(inner = 'rgba(255,255,255,1)', mid = 'rgba(255,190,110,0.75)') {
+    const c = document.createElement('canvas');
+    c.width = 128;
+    c.height = 128;
+    const x = c.getContext('2d');
+    const g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+    g.addColorStop(0, inner);
+    g.addColorStop(0.32, mid);
+    g.addColorStop(0.7, 'rgba(255,140,80,0.12)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g;
+    x.fillRect(0, 0, 128, 128);
+    return new THREE.CanvasTexture(c);
+  }
+
+  // --- Premium Interactive Hero Object: a floating holographic glass birthday cake
+  //     with 8 glowing candles, neon rims, orbiting halo rings and soft studio light.
+  function buildHeroObject() {
+    heroGroup = new THREE.Group();
+    heroGroup.position.set(0, 0.55, -2.5);
+
+    // A separate group spins continuously; the parent handles tilt / parallax.
+    heroSpin = new THREE.Group();
+    heroGroup.add(heroSpin);
+
+    const glowTex = makeGlowTexture();
+
+    // Pearlescent frosted-glass cake material
+    const cakeMat = new THREE.MeshPhysicalMaterial({
+      color: 0xf3e9ff,
+      metalness: 0.0,
+      roughness: 0.14,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.06,
+      reflectivity: 1.0,
+      sheen: new THREE.Color(0x9fe8ff),
+      emissive: new THREE.Color(0x14263f),
+      emissiveIntensity: 0.7
+    });
+
+    // Three stacked tiers + neon rim on each
+    const tiers = [
+      { r: 2.55, h: 0.95, y: -1.15, hue: 0x00d9ff },
+      { r: 1.95, h: 0.85, y: -0.35, hue: 0xf472b6 },
+      { r: 1.35, h: 0.75, y: 0.35, hue: 0xfbbf24 }
+    ];
+    tiers.forEach((t) => {
+      const tier = new THREE.Mesh(
+        new THREE.CylinderGeometry(t.r, t.r * 1.02, t.h, 72, 1),
+        cakeMat
+      );
+      tier.position.y = t.y;
+      tier.castShadow = false;
+      heroSpin.add(tier);
+
+      const rim = new THREE.Mesh(
+        new THREE.TorusGeometry(t.r, 0.035, 12, 96),
+        new THREE.MeshBasicMaterial({
+          color: t.hue,
+          transparent: true,
+          opacity: 0.85,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        })
+      );
+      rim.rotation.x = Math.PI / 2;
+      rim.position.y = t.y + t.h / 2;
+      heroSpin.add(rim);
+    });
+
+    // Base platter (thin glass disc)
+    const platter = new THREE.Mesh(
+      new THREE.CylinderGeometry(2.85, 2.85, 0.12, 80),
+      new THREE.MeshPhysicalMaterial({
+        color: 0x0b1626,
+        metalness: 0.4,
+        roughness: 0.08,
+        clearcoat: 1.0,
+        emissive: new THREE.Color(0x0a3a55),
+        emissiveIntensity: 0.5
+      })
+    );
+    platter.position.y = -1.68;
+    heroSpin.add(platter);
+
+    // Eight candles (one per year) with flickering flames + soft bloom sprites
+    const topY = 0.35 + 0.75 / 2;
+    const candleCount = 8;
+    for (let i = 0; i < candleCount; i++) {
+      const a = (i / candleCount) * Math.PI * 2;
+      const cx = Math.cos(a) * 0.78;
+      const cz = Math.sin(a) * 0.78;
+
+      const stick = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.055, 0.055, 0.62, 12),
+        new THREE.MeshPhysicalMaterial({
+          color: i % 2 === 0 ? 0xffffff : 0xbfe9ff,
+          clearcoat: 1.0,
+          roughness: 0.2,
+          emissive: new THREE.Color(0x223344),
+          emissiveIntensity: 0.4
+        })
+      );
+      stick.position.set(cx, topY + 0.31, cz);
+      heroSpin.add(stick);
+
+      const flame = new THREE.Mesh(
+        new THREE.SphereGeometry(0.085, 12, 12),
+        new THREE.MeshBasicMaterial({
+          color: 0xffd98a,
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        })
+      );
+      flame.position.set(cx, topY + 0.68, cz);
+      heroSpin.add(flame);
+
+      const bloom = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: glowTex,
+        color: 0xffb347,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        opacity: 0.9
+      }));
+      bloom.scale.set(0.95, 0.95, 0.95);
+      bloom.position.set(cx, topY + 0.68, cz);
+      heroSpin.add(bloom);
+
+      heroFlames.push({ mesh: flame, sprite: bloom, phase: Math.random() * Math.PI * 2 });
+    }
+
+    // Orbiting neon halo rings (cyan + amber), gently tilted
+    heroHalo = new THREE.Mesh(
+      new THREE.TorusGeometry(3.55, 0.045, 16, 120),
+      new THREE.MeshBasicMaterial({
+        color: 0x7fe9ff, transparent: true, opacity: 0.5,
+        blending: THREE.AdditiveBlending, depthWrite: false
+      })
+    );
+    heroHalo.rotation.x = Math.PI * 0.42;
+    heroSpin.add(heroHalo);
+
+    heroHalo2 = new THREE.Mesh(
+      new THREE.TorusGeometry(3.95, 0.03, 16, 120),
+      new THREE.MeshBasicMaterial({
+        color: 0xffa94d, transparent: true, opacity: 0.4,
+        blending: THREE.AdditiveBlending, depthWrite: false
+      })
+    );
+    heroHalo2.rotation.x = Math.PI * 0.58;
+    heroHalo2.rotation.y = 0.5;
+    heroSpin.add(heroHalo2);
+
+    // Orbiting sparkle constellation around the cake
+    const starCount = 60;
+    const starGeo = new THREE.BufferGeometry();
+    const starPos = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const rr = 3.2 + Math.random() * 1.6;
+      starPos[i * 3] = Math.cos(a) * rr;
+      starPos[i * 3 + 1] = (Math.random() - 0.5) * 3.4;
+      starPos[i * 3 + 2] = Math.sin(a) * rr;
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    heroOrbitStars = new THREE.Points(
+      starGeo,
+      new THREE.PointsMaterial({
+        map: glowTex, color: 0xfff2c4, size: 0.5, transparent: true,
+        opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
+      })
+    );
+    heroSpin.add(heroOrbitStars);
+
+    // Dark cinematic "pool of light" backdrop that lives in 3D behind the cake,
+    // so the neon object reads against the bright sky. Billboarded to camera.
+    const bc = document.createElement('canvas');
+    bc.width = bc.height = 256;
+    const bx = bc.getContext('2d');
+    const bg = bx.createRadialGradient(128, 128, 0, 128, 128, 128);
+    bg.addColorStop(0, 'rgba(3, 6, 16, 0.94)');
+    bg.addColorStop(0.42, 'rgba(6, 12, 28, 0.66)');
+    bg.addColorStop(0.7, 'rgba(8, 16, 32, 0.22)');
+    bg.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    bx.fillStyle = bg;
+    bx.fillRect(0, 0, 256, 256);
+    heroBackdrop = new THREE.Mesh(
+      new THREE.PlaneGeometry(24, 24),
+      new THREE.MeshBasicMaterial({
+        map: new THREE.CanvasTexture(bc),
+        transparent: true,
+        depthWrite: false,
+        opacity: 0.95
+      })
+    );
+    scene.add(heroBackdrop);
+
+    // Soft luminous bloom halo behind the cake (reads over the dark pool)
+    const heroGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glowTex,
+      color: 0x7fe9ff,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      opacity: 0.4
+    }));
+    heroGlow.scale.set(12, 12, 12);
+    heroGlow.position.set(0, 0.3, -1.8);
+    heroGroup.add(heroGlow);
+
+    // Soft studio light rigging local to the cake (warm key + cool fill)
+    heroPointLight = new THREE.PointLight(0xffc27a, 2.6, 30, 2);
+    heroPointLight.position.set(0, 3.0, 1.6);
+    heroGroup.add(heroPointLight);
+
+    heroFillLight = new THREE.PointLight(0x66d9ff, 1.4, 34, 2);
+    heroFillLight.position.set(-2.6, 0.4, 2.6);
+    heroGroup.add(heroFillLight);
+
+    scene.add(heroGroup);
+  }
+
   function updateParticleVortex(prog, velocity = 0) {
     if (!particleVortex) return;
-    if (prog < 0.32) {
-      particleVortex.visible = true;
-      const fade = 1.0 - (prog / 0.32);
-      particleVortex.material.opacity = 0.55 * fade;
-      const s = 1.0 + prog * 0.9;
-      particleVortex.scale.set(s, s, s);
-      particleVortex.rotation.y += 0.0006 + Math.abs(velocity) * 0.0008;
-    } else {
-      particleVortex.visible = false;
-    }
+    // Persistent floating bokeh / dust motes: fades but never fully vanishes,
+    // so the scene always feels alive and layered.
+    particleVortex.visible = true;
+    const fade = 1.0 - Math.min(1, prog / 0.32) * 0.72;
+    particleVortex.material.opacity = 0.55 * fade;
+    const s = 1.0 + prog * 0.9;
+    particleVortex.scale.set(s, s, s);
+    particleVortex.rotation.y += 0.0006 + Math.abs(velocity) * 0.0008;
   }
 
   // --- 3. Scroll System (Lenis Buttery Smooth Momentum + Linear GSAP Flight) ---
@@ -1165,12 +1399,22 @@
 
   // --- 6. Balloon Popping Raycaster Handler ---
   function handleBalloonClick(event) {
-    if (event.target.closest('#windows-stage, .top-status-bar, #space-hero, #spatial-dock, .flight-scrubber-container')) return;
+    if (event.target.closest('#windows-stage, .top-status-bar, #space-hero, #spatial-dock, .flight-scrubber-container, .spatial-dock-container')) return;
 
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
+
+    // Interacting with the big hero object bursts confetti + pulses the halo
+    if (heroGroup && heroGroup.visible) {
+      const heroHits = raycaster.intersectObject(heroGroup, true);
+      if (heroHits.length) {
+        triggerHeroBurst(heroHits[0].point, event);
+        return;
+      }
+    }
+
     const intersects = raycaster.intersectObjects(scene.children, true);
 
     for (let hit of intersects) {
@@ -1258,6 +1502,26 @@
     });
   }
 
+  // Celebratory burst when the hero cake is clicked / tapped
+  function triggerHeroBurst(pos, event) {
+    heroPulse = 1;
+    if (window.soundEngine && window.soundEngine.playChime) window.soundEngine.playChime();
+
+    const ox = event ? event.clientX / window.innerWidth : 0.5;
+    const oy = event ? event.clientY / window.innerHeight : 0.5;
+    if (window.confetti) {
+      window.confetti({
+        particleCount: 90,
+        spread: 100,
+        startVelocity: 45,
+        scalar: 1.0,
+        origin: { x: ox, y: oy },
+        colors: ['#00d9ff', '#f43f5e', '#fbbf24', '#a855f7', '#4ade80', '#ff7ac6']
+      });
+    }
+    createPopBurst(pos || new THREE.Vector3(0, 0, 0), 0x9fe8ff);
+  }
+
   function downloadCalendarInvite() {
     if (window.soundEngine) window.soundEngine.playClick();
     const icsContent = [
@@ -1272,8 +1536,8 @@
       'DTSTART:20260918T130000Z',
       'DTEND:20260918T183000Z',
       'SUMMARY:Ajooni\'s 8th Birthday Celebration 🎈🎂',
-      'DESCRIPTION:Join us for Ajooni\'s 8th Birthday Celebration at Eastern Metropolitan Club! Magic show, games, feast and joy.',
-      'LOCATION:Eastern Metropolitan Club, A-73, Purba Diganta, Santoshpur, Kolkata, West Bengal 700075',
+      'DESCRIPTION:Join us for Ajooni\'s 8th Birthday Celebration at Coral Hall, Eastern Metropolitan Club! Magic show, feast and joy.',
+      'LOCATION:Coral Hall, Eastern Metropolitan Club, A-73, Purba Diganta, Santoshpur, Kolkata, West Bengal 700075',
       'STATUS:CONFIRMED',
       'BEGIN:VALARM',
       'TRIGGER:-PT24H',
@@ -1393,6 +1657,77 @@
   // --- RSVP Recording & Host Admin System ---
   const RSVP_STORAGE_KEY = 'ajooni_8th_rsvps_list';
 
+  // ── RSVP → GIT REPORT ────────────────────────────────────────────────────
+  // Every RSVP is appended to rsvps.json in the repo through a small
+  // serverless endpoint, so `git pull` is the report (and the in-app "RSVPs"
+  // list reads the same committed file).
+  //
+  // SETUP (free, ~5 min) — see serverless/rsvp-worker.js for the code:
+  //   1. Deploy that file as a Cloudflare Worker with these variables:
+  //        GITHUB_TOKEN  fine-grained token, "Contents: Read and write" on the repo
+  //        GITHUB_REPO   e.g. "indranilnnd-creator/ajooni-8th-birthday"
+  //        RSVP_SECRET   any long random string you choose
+  //   2. Paste the Worker URL and that same secret below.
+  // Until then, RSVPs still save locally and everything else works.
+  const RSVP_REPO = {
+    endpoint: 'https://rsvp-worker.indranilnnd.workers.dev',
+    secret: '44a0c9e1-5227-49a8-9a77-8ec19438a713882f5c4065ed4b7d893bc5ff5a3b3fff7lpm3p1o1d9',
+    dataFile: 'rsvps.json'   // committed at the repo root
+  };
+
+  // Appends one record to the repo file. Never blocks the guest experience.
+  async function submitRsvpToRepo(record) {
+    if (!RSVP_REPO.endpoint) return false;
+    try {
+      const res = await fetch(RSVP_REPO.endpoint.replace(/\/+$/, ''), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          secret: RSVP_REPO.secret,
+          id: record.id,
+          date: record.date,
+          name: record.name,
+          status: record.status,
+          guests: record.guests,
+          // phone is intentionally NOT committed — the repo is public
+          message: record.message
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      return !!(data && data.ok);
+    } catch (err) {
+      return false;
+    }
+  }
+
+  // Reads the committed report (same-origin on GitHub Pages) so the host sees
+  // every response, not only the ones made on their own device.
+  let committedRsvps = [];
+
+  async function fetchCommittedRsvps() {
+    try {
+      const res = await fetch(`${RSVP_REPO.dataFile}?t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  // Committed (from git) + any not-yet-synced local records, de-duplicated.
+  function getMergedRsvps() {
+    const seen = new Set();
+    const merged = [];
+    [...committedRsvps, ...getSavedRsvps()].forEach((item) => {
+      if (!item) return;
+      const key = String(item.id);
+      if (!seen.has(key)) { seen.add(key); merged.push(item); }
+    });
+    merged.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+    return merged;
+  }
+
   function getSavedRsvps() {
     try {
       return JSON.parse(localStorage.getItem(RSVP_STORAGE_KEY) || '[]');
@@ -1470,7 +1805,7 @@
 
         // WhatsApp Share button
         if (DOM.whatsappShareBtn) {
-          const waText = `*Ajooni's 8th Birthday RSVP Confirmation* 🎈🎂\n\n*Name:* ${name}\n*Status:* ${status === 'Attending' ? '🎉 Attending with Joy' : '💖 Sending Love & Wishes'}\n*Guests:* ${guests}\n*Contact:* ${phone || 'N/A'}\n*Birthday Wish:* "${message || 'Happy 8th Birthday Ajooni!'}"\n\n*Venue:* Eastern Metropolitan Club, Kolkata\n*Date:* Friday, 18 Sept 2026, 6:30 PM`;
+          const waText = `*Ajooni's 8th Birthday RSVP Confirmation* 🎈🎂\n\n*Name:* ${name}\n*Status:* ${status === 'Attending' ? '🎉 Attending with Joy' : '💖 Sending Love & Wishes'}\n*Guests:* ${guests}\n*Contact:* ${phone || 'N/A'}\n*Birthday Wish:* "${message || 'Happy 8th Birthday Ajooni!'}"\n\n*Venue:* Coral Hall, Eastern Metropolitan Club, Kolkata\n*Date:* Friday, 18 Sept 2026, 6:30 PM`;
           DOM.whatsappShareBtn.onclick = () => {
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`, '_blank');
           };
@@ -1480,22 +1815,8 @@
         if (window.soundEngine) window.soundEngine.playChime();
         triggerConfettiBlast();
 
-        // Optional cloud dispatch via FormSubmit (silent background post)
-        try {
-          fetch('https://formsubmit.co/ajax/ajooni.celebration.2026@gmail.com', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({
-              Event: "Ajooni's 8th Birthday Party RSVP",
-              Date: dateStr,
-              Name: name,
-              Attendance: status,
-              GuestsCount: guests,
-              Phone: phone,
-              Message: message
-            })
-          }).catch(() => {});
-        } catch (err) {}
+        // Commit the RSVP to the repo (Git is the report)
+        submitRsvpToRepo(rsvpRecord);
       });
     }
 
@@ -1509,7 +1830,7 @@
 
     // 4. Host Admin Dashboard Modal
     function renderAdminTable() {
-      const list = getSavedRsvps();
+      const list = getMergedRsvps();
       if (DOM.adminTotalCount) DOM.adminTotalCount.textContent = list.length;
 
       let attendingFamilies = 0;
@@ -1549,7 +1870,9 @@
     }
 
     if (DOM.guestbookBtn) {
-      DOM.guestbookBtn.addEventListener('click', () => {
+      DOM.guestbookBtn.addEventListener('click', async () => {
+        // Pull the latest committed report from git before showing it
+        committedRsvps = await fetchCommittedRsvps();
         renderAdminTable();
         if (DOM.adminModal) DOM.adminModal.style.display = 'flex';
         if (window.soundEngine) window.soundEngine.playClick();
@@ -1573,7 +1896,7 @@
     // 5. Export to CSV
     if (DOM.adminExportCsvBtn) {
       DOM.adminExportCsvBtn.addEventListener('click', () => {
-        const list = getSavedRsvps();
+        const list = getMergedRsvps();
         if (list.length === 0) {
           alert('No RSVP records to export yet!');
           return;
@@ -1603,12 +1926,16 @@
     // 6. Clear Records
     if (DOM.adminClearBtn) {
       DOM.adminClearBtn.addEventListener('click', () => {
-        if (confirm('Are you sure you want to clear all stored RSVP records?')) {
+        if (confirm('Are you sure you want to clear all stored RSVP records? (Records committed to the repo must be cleared in Git.)')) {
           localStorage.removeItem(RSVP_STORAGE_KEY);
+          committedRsvps = [];
           renderAdminTable();
         }
       });
     }
+
+    // 7. Prefetch the committed report so summary counts are ready
+    fetchCommittedRsvps().then((list) => { committedRsvps = list; });
   }
 
   // --- 7. Three.js Render Loop ---
@@ -1623,6 +1950,41 @@
     const elapsedTime = clock.getElapsedTime();
     // Venue arrival bloom factor (0.0 at high altitude, smoothly rises to 1.0 upon venue approach)
     const venueArrival = Math.max(0, Math.min(1, (state.progress - 0.65) / 0.12));
+
+    // --- Premium hero object: float, tilt toward the pointer, flicker the candles ---
+    pointerNX += (pointerTX - pointerNX) * 0.06;
+    pointerNY += (pointerTY - pointerNY) * 0.06;
+    const introFactor = Math.max(0, Math.min(1, 1 - state.progress / 0.075));
+    if (heroGroup) {
+      heroGroup.visible = introFactor > 0.003;
+      heroAutoAngle += 0.0034;
+      const bob = Math.sin(elapsedTime * 0.9) * 0.16;
+      heroGroup.position.y = 0.98 + bob + (1 - introFactor) * 2.6;
+      heroGroup.position.x = pointerNX * 0.35;
+      heroGroup.rotation.y = heroAutoAngle + pointerNX * 0.35;
+      heroGroup.rotation.x = pointerNY * 0.16;
+      const baseScale = window.innerWidth < 768 ? 0.68 : (window.innerWidth < 1100 ? 0.98 : 1.24);
+      heroGroup.scale.setScalar(introFactor * baseScale * (heroHover ? 1.07 : 1.0));
+      if (heroBackdrop) {
+        heroBackdrop.visible = heroGroup.visible;
+        heroBackdrop.position.set(heroGroup.position.x, heroGroup.position.y, heroGroup.position.z - 5);
+        heroBackdrop.quaternion.copy(camera.quaternion);
+        heroBackdrop.scale.setScalar(introFactor * baseScale);
+        heroBackdrop.material.opacity = introFactor * 0.95;
+      }
+      heroHalo.rotation.z += 0.008;
+      heroHalo2.rotation.z -= 0.005;
+      if (heroOrbitStars) heroOrbitStars.rotation.y -= 0.012;
+      heroFlames.forEach((f) => {
+        const fl = 0.85 + Math.sin(elapsedTime * 13 + f.phase) * 0.18;
+        f.mesh.scale.setScalar(0.7 + fl * 0.5);
+        f.sprite.material.opacity = 0.55 + fl * 0.4;
+        f.sprite.scale.setScalar(0.8 + fl * 0.55);
+      });
+      if (heroPointLight) heroPointLight.intensity = 2.3 + Math.sin(elapsedTime * 9.3) * 0.35;
+      heroPulse *= 0.9;
+      heroHalo.scale.setScalar(1 + heroPulse * 0.7);
+    }
 
     // Animate Floating Balloons
     balloons.forEach((bGroup) => {
@@ -1694,13 +2056,35 @@
         DOM.windowsStage.style.transform = `translate3d(${rotY * -50}px, ${rotX * 30}px, 0)`;
       }
     } else {
-      // Gentle handheld "breathing" for a cinematic, alive camera
+      // Gentle handheld "breathing" + pointer parallax + subtle scroll-driven dolly
       const driftX = Math.sin(elapsedTime * 0.26) * 0.5;
       const driftY = Math.cos(elapsedTime * 0.21) * 0.32;
-      camera.position.x += (driftX - camera.position.x) * 0.015;
-      camera.position.y += (driftY - camera.position.y) * 0.015;
+      const targetX = driftX + pointerNX * 1.15;
+      const targetY = driftY - pointerNY * 0.75;
+      const targetZ = 22 - state.progress * 2.4;
+      camera.position.x += (targetX - camera.position.x) * 0.02;
+      camera.position.y += (targetY - camera.position.y) * 0.02;
+      camera.position.z += (targetZ - camera.position.z) * 0.03;
       camera.rotation.z = Math.sin(elapsedTime * 0.17) * 0.0045;
     }
+
+    // Subtle multi-layer parallax on the cinematic background
+    if (!controls.enabled) {
+      DOM.earthCanvas.style.transform = `scale(1.07) translate3d(${pointerNX * -16}px, ${pointerNY * -12}px, 0)`;
+      document.documentElement.style.setProperty('--par-x', pointerNX.toFixed(3));
+      document.documentElement.style.setProperty('--par-y', pointerNY.toFixed(3));
+    }
+
+    // Hover detection on the hero object (drives scale bloom + cursor state)
+    if (heroGroup && heroGroup.visible && !controls.enabled) {
+      mouse.x = pointerNX;
+      mouse.y = -pointerNY;
+      raycaster.setFromCamera(mouse, camera);
+      heroHover = raycaster.intersectObject(heroGroup, true).length > 0;
+    } else if (heroHover) {
+      heroHover = false;
+    }
+    document.body.classList.toggle('hero-object-hover', heroHover);
 
     renderer.render(scene, camera);
   }
@@ -1722,6 +2106,10 @@
       mouseX = e.clientX;
       mouseY = e.clientY;
 
+      // Normalized pointer for hero tilt + camera parallax (-1..1)
+      pointerTX = (mouseX / window.innerWidth) * 2 - 1;
+      pointerTY = (mouseY / window.innerHeight) * 2 - 1;
+
       dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
 
       if (spotlight) {
@@ -1741,6 +2129,13 @@
           w.style.setProperty('--card-mouse-y', `${relY}px`);
         }
       });
+    }, { passive: true });
+
+    // Touch / pen support for pointer-driven hero parallax
+    window.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'mouse') return;
+      pointerTX = (e.clientX / window.innerWidth) * 2 - 1;
+      pointerTY = (e.clientY / window.innerHeight) * 2 - 1;
     }, { passive: true });
 
     function renderRing() {

@@ -144,6 +144,21 @@ body::-webkit-scrollbar, html::-webkit-scrollbar {
   box-shadow: 0 0 25px rgba(0, 255, 204, 0.3);
 }
 
+/* Hovering the interactive 3D hero object — warm "cake" cursor */
+body.hero-object-hover .cursor-ring {
+  width: 66px;
+  height: 66px;
+  margin-top: -33px;
+  margin-left: -33px;
+  border-color: rgba(255, 206, 140, 0.95);
+  background: rgba(255, 190, 110, 0.1);
+  box-shadow: 0 0 30px rgba(255, 190, 110, 0.45);
+}
+body.hero-object-hover .cursor-dot {
+  background: #ffd6a0;
+  box-shadow: 0 0 14px #ffbe6e, 0 0 24px #ff9d3d;
+}
+
 @media (pointer: coarse) {
   .cursor-dot, .cursor-ring {
     display: none !important;
@@ -185,6 +200,77 @@ body::-webkit-scrollbar, html::-webkit-scrollbar {
   z-index: 2;
   pointer-events: none;
   transition: filter 0.6s ease;
+}
+
+/* ==========================================================================
+   Dark Cinematic Aurora Backdrop + Floating Glass Orbs
+   ========================================================================== */
+:root { --par-x: 0; --par-y: 0; }
+
+.aurora-bg {
+  position: fixed;
+  inset: -12%;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.72;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(38vw 32vw at 18% 20%, rgba(0, 217, 255, 0.16), transparent 62%),
+    radial-gradient(44vw 36vw at 84% 28%, rgba(168, 85, 247, 0.15), transparent 64%),
+    radial-gradient(48vw 40vw at 52% 94%, rgba(244, 63, 94, 0.11), transparent 66%),
+    radial-gradient(34vw 30vw at 12% 82%, rgba(0, 255, 204, 0.09), transparent 62%);
+  filter: blur(34px);
+  animation: auroraDrift 28s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes auroraDrift {
+  0%   { transform: scale(1.04) rotate(0deg); }
+  50%  { transform: scale(1.13) rotate(4deg) translate(1%, -1%); }
+  100% { transform: scale(1.06) rotate(-3deg) translate(-1.5%, 1.5%); }
+}
+
+.floating-orbs {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+  transform: translate3d(calc(var(--par-x) * 14px), calc(var(--par-y) * 11px), 0);
+  transition: transform 0.15s linear;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%,
+    rgba(255, 255, 255, 0.45),
+    rgba(255, 255, 255, 0.05) 44%,
+    transparent 72%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 70px rgba(0, 217, 255, 0.14), inset 0 0 50px rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(3px) saturate(140%);
+  -webkit-backdrop-filter: blur(3px) saturate(140%);
+  animation: orbFloat 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+.orb-1 { width: 320px; height: 320px; top: 6%; left: 3%;  animation-duration: 24s; box-shadow: 0 0 90px rgba(0, 217, 255, 0.20); }
+.orb-2 { width: 220px; height: 220px; top: 16%; right: 6%; animation-duration: 19s; box-shadow: 0 0 80px rgba(168, 85, 247, 0.22); }
+.orb-3 { width: 150px; height: 150px; top: 60%; left: 8%;  animation-duration: 22s; box-shadow: 0 0 60px rgba(0, 255, 204, 0.20); }
+.orb-4 { width: 260px; height: 260px; bottom: 8%; right: 4%; animation-duration: 26s; box-shadow: 0 0 90px rgba(244, 63, 94, 0.18); }
+.orb-5 { width: 110px; height: 110px; top: 40%; right: 18%; animation-duration: 17s; box-shadow: 0 0 50px rgba(251, 191, 36, 0.22); }
+.orb-6 { width: 180px; height: 180px; bottom: 20%; left: 22%; animation-duration: 23s; box-shadow: 0 0 70px rgba(127, 233, 255, 0.16); }
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate3d(-10px, -16px, 0); }
+  50%      { transform: translate3d(12px, 18px, 0); }
+}
+
+@media (max-width: 768px) {
+  .orb { backdrop-filter: none; -webkit-backdrop-filter: none; opacity: 0.7; }
+  .orb-2, .orb-5 { display: none; }
+  .aurora-bg { opacity: 0.55; }
 }
 
 /* ==========================================================================
@@ -270,8 +356,8 @@ body::-webkit-scrollbar, html::-webkit-scrollbar {
   .cine-leak { opacity: 0.6; }
 }
 
-/* Fade out the post layer while the hero intro is on (keeps intro bright) */
-body.intro-active .cinematic-overlay { opacity: 0.35; }
+/* Deepen the cinematic grade on the hero so the title + neon object read */
+body.intro-active .cinematic-overlay { opacity: 0.92; }
 
 /* Spatial mode: push the busy background softly out of focus */
 body.spatial-active #earth-canvas {
@@ -601,86 +687,112 @@ body.spatial-active .cine-leak { opacity: 0.45; }
    ========================================================================== */
 .space-hero-cta {
   position: fixed;
-  top: 54%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  bottom: 5.5vh;
+  top: auto;
+  transform: translateX(-50%);
   z-index: 55;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 14px;
-  padding: 32px 46px;
-  background: rgba(6, 10, 20, 0.72);
-  backdrop-filter: var(--ios-blur);
-  -webkit-backdrop-filter: var(--ios-blur);
-  border: 1px solid rgba(0, 217, 255, 0.25);
-  border-radius: 36px;
-  box-shadow: 0 45px 90px rgba(0, 0, 0, 0.8), 0 0 50px -15px rgba(0, 217, 255, 0.25), inset 0 1px 1.5px rgba(255, 255, 255, 0.35);
-  max-width: 520px;
+  gap: 15px;
+  padding: 0 26px;
+  background: none;
+  border: none;
+  box-shadow: none;
+  max-width: 760px;
+  width: min(93vw, 760px);
   transition: opacity 0.6s ease, transform 0.6s ease;
   pointer-events: auto;
-  position: fixed;
-  overflow: hidden;
 }
 
-.space-hero-cta::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -120%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.08), rgba(255, 255, 255, 0.12), transparent);
-  transform: skewX(-25deg);
-  pointer-events: none;
-  animation: cardGleam 7s infinite ease-in-out;
-}
-
-@keyframes cardGleam {
-  0%, 100% { left: -120%; }
-  30%, 70% { left: 220%; }
-}
+.space-hero-cta::after { content: none; }
 
 #space-hero.fade-out,
 .space-hero-cta.fade-out {
   opacity: 0;
   visibility: hidden;
-  transform: translate(-50%, -60%) scale(0.9);
+  transform: translateX(-50%) translateY(40px) scale(0.96);
   pointer-events: none;
+}
+
+/* Floating hint pointing at the 3D hero cake (lives inside the hero stack) */
+.hero-object-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 16px;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #ffe9cf;
+  background: rgba(30, 16, 6, 0.42);
+  backdrop-filter: var(--ios-blur);
+  -webkit-backdrop-filter: var(--ios-blur);
+  border: 1px solid rgba(255, 190, 110, 0.42);
+  border-radius: 999px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5), 0 0 26px -6px rgba(255, 180, 100, 0.6);
+  pointer-events: none;
+}
+
+.hero-object-hint .hint-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffbe6e;
+  box-shadow: 0 0 10px #ffbe6e, 0 0 18px #ff9d3d;
+  animation: hintPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes hintPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.55); opacity: 0.5; }
+}
+
+/* The hero already carries a scroll cue — retire the duplicate bottom prompt */
+#scroll-prompt {
+  display: none !important;
 }
 
 .hero-tag {
   font-family: var(--font-heading);
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 2.2px;
+  letter-spacing: 2.4px;
   font-weight: 700;
   color: #00d9ff;
-  background: rgba(0, 217, 255, 0.12);
+  background: rgba(0, 217, 255, 0.1);
   padding: 6px 18px;
   border-radius: 999px;
   border: 1px solid rgba(0, 217, 255, 0.35);
-  box-shadow: 0 0 15px rgba(0, 217, 255, 0.15);
+  box-shadow: 0 0 18px rgba(0, 217, 255, 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .hero-title {
   font-family: var(--font-heading);
-  font-size: 38px;
+  font-size: clamp(36px, 5.2vw, 66px);
   font-weight: 900;
-  letter-spacing: -0.04em;
-  line-height: 1.15;
-  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 35%, #00d9ff 75%, #a855f7 100%);
+  letter-spacing: -0.045em;
+  line-height: 1.0;
+  text-wrap: balance;
+  background: linear-gradient(135deg, #ffffff 0%, #eaf6ff 32%, #00d9ff 68%, #a855f7 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 14px rgba(0, 217, 255, 0.25));
+  filter: drop-shadow(0 4px 28px rgba(0, 217, 255, 0.35)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.65));
 }
 
 .hero-subtitle {
-  font-size: 14.5px;
+  font-size: clamp(13.5px, 1.1vw, 16px);
   color: #cbd5e1;
-  line-height: 1.5;
+  line-height: 1.55;
   font-weight: 400;
+  max-width: 560px;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75);
 }
 
 .satellite-indicator {
@@ -1086,10 +1198,10 @@ body.spatial-active .cine-leak { opacity: 0.45; }
 
 .card-title {
   font-family: var(--font-heading);
-  font-size: 26px;
-  font-weight: 900;
-  letter-spacing: -0.035em;
-  line-height: 1.25;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.22;
   margin-bottom: 8px;
   background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 45%, #00d9ff 80%, #a855f7 100%);
   -webkit-background-clip: text;
@@ -1554,11 +1666,16 @@ body.spatial-active .cine-leak { opacity: 0.45; }
     display: none;
   }
   .space-hero-cta {
-    width: calc(100% - 32px);
-    padding: 28px 20px;
+    width: calc(100% - 24px);
+    padding: 0 16px;
+    bottom: 4vh;
   }
   .hero-title {
-    font-size: 26px;
+    font-size: clamp(30px, 10vw, 46px);
+  }
+  .hero-object-hint {
+    font-size: 11px;
+    padding: 6px 13px;
   }
   .spatial-dock-container {
     gap: 6px;
@@ -2016,11 +2133,9 @@ body.spatial-active .cine-leak { opacity: 0.45; }
   /* 2. Hero Section */
   .space-hero-cta {
     width: calc(100% - 24px);
-    max-width: 380px;
-    padding: 22px 16px;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 22px;
+    max-width: 440px;
+    padding: 0 16px;
+    bottom: 4.5vh;
   }
 
   .hero-badge {
